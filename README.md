@@ -151,6 +151,3 @@ This project was developed by **Alexis Palacios** as part of the coding challeng
 - Responsive design with mobile-first approach
 - Real-time data synchronization with Firebase
 
-## 📄 License
-
-This project is open source and available under the [MIT License](LICENSE).
