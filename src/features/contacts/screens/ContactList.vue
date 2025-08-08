@@ -25,6 +25,21 @@
           @search="handleSearch"
           class="transform hover:scale-[1.01] transition-all duration-200"
         />
+        
+        <!-- Sort Control -->
+        <div class="flex justify-end mt-4">
+          <button
+            @click="toggleSort"
+            class="flex items-center gap-2 text-sm text-gray-700 hover:text-gray-900 transition-colors duration-200"
+          >
+            <span class="underline">
+              {{ sortAscending ? 'Oldest First' : 'Most Recent First' }}
+            </span>
+            <span class="material-symbols-outlined text-lg">
+              swap_vert
+            </span>
+          </button>
+        </div>
       </div>
       <div v-if="contacts.length > 0" class="space-y-4 max-w-2xl mx-auto">
         <contacts-not-found 
@@ -107,16 +122,26 @@ const contactToDelete = ref<Contact | null>(null)
 const searchQuery = ref('')
 const currentPage = ref(1)
 const itemsPerPage = ref(5)
+const sortAscending = ref(true)
 
 const filteredContacts = computed(() => {
-  if (!searchQuery.value.trim()) {
-    return contacts.value
+  let result = contacts.value
+  
+  // Filter by search query if exists
+  if (searchQuery.value.trim()) {
+    const query = searchQuery.value.toLowerCase().trim()
+    result = result.filter(contact => 
+      contact.name.toLowerCase().includes(query) ||
+      contact.email.toLowerCase().includes(query)
+    )
   }
-  const query = searchQuery.value.toLowerCase().trim()
-  return contacts.value.filter(contact => 
-    contact.name.toLowerCase().includes(query) ||
-    contact.email.toLowerCase().includes(query)
-  )
+  
+  // Sort by lastContactDate (ascending or descending based on sortAscending)
+  return result.sort((a, b) => {
+    const dateA = new Date(a.lastContactDate).getTime()
+    const dateB = new Date(b.lastContactDate).getTime()
+    return sortAscending.value ? dateA - dateB : dateB - dateA
+  })
 })
 
 const totalPages = computed(() => {
@@ -142,6 +167,11 @@ const clearSearch = () => {
 const handlePageChange = (page: number) => {
   currentPage.value = page
   window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+const toggleSort = () => {
+  sortAscending.value = !sortAscending.value
+  currentPage.value = 1
 }
 
 const loadContacts = async () => {
